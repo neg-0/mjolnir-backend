@@ -73,3 +73,17 @@ describe('the /users/:user', () => {
     });
 
 });
+
+describe('the /users/:user/history', () => {
+
+    it('get the templates and serialized_options from a users history', async () => {
+        const res = await request(app)
+            .get('/users/Mario/history')
+            .expect(200);
+
+            // console.log('res.body is:', res.body[0])
+            expect(res.body[0].template_id).toBe(1)
+            expect(res.body[0].serialized_options).toBe('user_2 supplied form data')
+    });
+
+});

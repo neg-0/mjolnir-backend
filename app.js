@@ -44,7 +44,7 @@ app.get('/users', (req, res) => {
     res.send("Please Input your User Name and Password")
 })
 
-app.post('/users', async(req, res) => {
+app.post('/users', async (req, res) => {
     let userFromBody = req.body.user_name
     let passwordFromBody = req.body.password
 
@@ -81,11 +81,56 @@ app.get('/users/:user', (req, res) => {
 
 
 
-app.get('/users/:users/history', (req, res) => {
+app.get('/users/:user/history', (req, res) => {
+    let user = req.params.user
+    var userIdHist;
+    var templateIdHist;
+    var serializedOptionsHist;
+
+
+    knex.select('id')
+        .from('users')
+        .where('user_name', user)
+        .then(data => {
+            //console.log('data is', data)
+            //console.log('user is', user)
+            userIdHist = data[0].id
+            console.log('user is', userIdHist)
+            knex.select('template_id', 'serialized_options')
+                .from('users_templates')
+                .where('user_id', userIdHist)
+                .then(data => {
+                    //let {template_id} = data[0]
+                    templateIdHist = data[0].template_id;
+                    serializedOptionsHist = data[0].serialized_options;
+                    
+                    if (data.length > 0) {
+                        knex.select('body')
+                            .from('templates')
+                            .where('id', templateIdHist)
+                            .then(data =>{
+                                res.status(200).send({template_body: data[0].body, serialized_options: serializedOptionsHist})
+                            })
+                    }
+                    else {
+                        res.status(404).json('User history not found')
+                    }
+                })
+                .catch(err =>
+                    res.status(404).json({
+                        message:
+                            'The data you are looking for could not be found. Please try again'
+                    })
+                );
+        })
+
+
+
+
 
 })
 
-app.get('/users/:users/favorites', (req, res) => {
+app.get('/users/:user/favorites', (req, res) => {
 
 })
 
