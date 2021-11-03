@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/neg-0/mjolnir-backend#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "eslint-plugin-jest": "^25.2.2",
     "express": "^4.17.1",
     "knex": "^0.95.13",
