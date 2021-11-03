@@ -33,7 +33,7 @@ describe('the /users', () => {
 
     });
 
-    it('posts a input user credentials to create user that can be called from database', async () => {
+    it('posts user credentials to create user that can be called from database', async () => {
 
         await request(app)
             .post('/users')
