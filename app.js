@@ -81,11 +81,13 @@ app.get('/users/:user', (req, res) => {
 
 
 
-app.get('/users/:user/history', (req, res) => {
+app.get('/users/:user/history', async(req, res) => {
     let user = req.params.user
     var userIdHist;
-    var templateIdHist;
-    var serializedOptionsHist;
+    var templateIdHist = [];
+    var serializedOptionsHist = []; //want to return this as {template_body: templateBodyHist[i]}
+    var templateBodyHist = []; //want to return this as {template_body: templateBodyHist[i]}
+    var resultArr =[];
 
 
     knex.select('id')
@@ -96,22 +98,47 @@ app.get('/users/:user/history', (req, res) => {
             //console.log('user is', user)
             userIdHist = data[0].id
             console.log('user is', userIdHist)
-            knex.select('template_id', 'serialized_options')
+             knex.select('template_id', 'serialized_options')
                 .from('users_templates')
                 .where('user_id', userIdHist)
-                .then(data => {
+                .then(async (data) => {
                     //let {template_id} = data[0]
-                    templateIdHist = data[0].template_id;
-                    serializedOptionsHist = data[0].serialized_options;
-                    
+
+
                     if (data.length > 0) {
-                        knex.select('body')
+                        console.log('data is:', data)
+                        for (let i = 0; i < data.length; i++) {
+                            templateIdHist.push(data[i].template_id);
+                            serializedOptionsHist.push(data[i].serialized_options);
+                        
+                        await knex.select('body')
                             .from('templates')
-                            .where('id', templateIdHist)
-                            .then(data =>{
-                                res.status(200).send({template_body: data[0].body, serialized_options: serializedOptionsHist})
+                            .where('id', templateIdHist[i])
+                            .then(data => {
+                                console.log('data for templates is', data)
+                                templateBodyHist.push(data[0].body)
+                                console.log('templateBodyHist is', templateBodyHist)
                             })
+                        }
+                        //console.log('templateBodyHist is 2', templateBodyHist)
+                        //console.log('anything')
+                        //console.log('serializedOptionsHist is:', serialOptionsHist)
+                        //console.log('anything 2')
+                        
+                        for (let j=0; j<data.length; j++){
+                        console.log('templateBodyHist[j]', templateBodyHist[j])
+
+                        resultArr.push({'template_body': templateBodyHist[j], 'serialized_options': serializedOptionsHist[j]})
+                        }
+                        
+                        console.log('resultArr is', resultArr)
+                        res.status(200).send(resultArr)
+                    
+                        
                     }
+
+
+                    
                     else {
                         res.status(404).json('User history not found')
                     }

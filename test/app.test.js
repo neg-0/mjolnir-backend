@@ -76,14 +76,24 @@ describe('the /users/:user', () => {
 
 describe('the /users/:user/history', () => {
 
-    it('get the templates and serialized_options from a users history', async () => {
+    it('get the templates and serialized_options from a users history with one object', async () => {
         const res = await request(app)
             .get('/users/Mario/history')
             .expect(200);
 
             // console.log('res.body is:', res.body[0])
-            expect(res.body[0].template_id).toBe(1)
-            expect(res.body[0].serialized_options).toBe('user_2 supplied form data')
+            expect(res.body.template_body).toBe('long string here')
+            expect(res.body.serialized_options).toBe('user_2 supplied form data')
+    });
+
+    it('get the templates and serialized_options from a users history with one object', async () => {
+        const res = await request(app)
+            .get('/users/Floyd/history')
+            .expect(200);
+
+            // console.log('res.body is:', res.body[0])
+            expect(res.body.template_body).toBe('long string here')
+            expect(res.body.serialized_options).toBe('user_2 supplied form data')
     });
 
 });
