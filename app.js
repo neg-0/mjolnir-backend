@@ -7,6 +7,23 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
+let users = [{
+    id: 1,
+    name: "Brian",
+    serializedOptions: [
+        { id: 1, title: "First Letter to Santa", name: "Little Brian" }
+    ],
+    favorites: [1, 2, 3]
+},
+{
+    id: 2,
+    name: "Dustin",
+    serializedOptions: [
+        { id: 1, title: "First Letter to Santa", name: "Little Dustin" }
+    ],
+    favorites: [2, 3, 4]
+}]
+
 app.get('/', (req, res) => {
     res.send("this is the Home screen")
 })
@@ -22,9 +39,8 @@ app.get('/templates/:template_id', (req, res) => {
 })
 
 app.get('/users', (req, res) => {
-
-    res.send('Please Input your User Name and Password')
-
+    // Returns users dummy data
+    res.json(users)
 })
 
 app.post('/users', (req, res) => {
