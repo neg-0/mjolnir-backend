@@ -23,6 +23,17 @@ describe('the /templates path', () => {
     });
 });
 
+describe('the /templates/:template_id path', () => {
+    it('returns the selected template when called by id in template table', async () => {
+        const res =await request(app)
+            .get('/templates/1')
+            .expect(200);
+
+            expect(res.body[0].title).toBe('letter to Santa');
+
+    });
+});
+
 describe('the /users', () => {
 
     it('returns "Please Input your User Name and Password"', async () => {
@@ -50,7 +61,7 @@ describe('the /users', () => {
 
 });
 
-describe('the /users/:users', () => {
+describe('the /users/:user', () => {
 
     it('get user credentials from database', async () => {
         const res = await request(app)
@@ -60,7 +71,5 @@ describe('the /users/:users', () => {
             // console.log('res.body is:', res.body[0])
             expect(res.body[0].user_name).toBe("Mario")
     });
-
-
 
 });

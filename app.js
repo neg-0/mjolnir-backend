@@ -19,7 +19,24 @@ app.get('/templates', (req, res) => {
 app.get('/templates/:template_id', (req, res) => {
 
     let template_id = req.params.template_id
-    res.send("Please Select a Template")
+
+    knex.select('title')
+        .from('templates')
+        .where('id', template_id)
+        .then(data => {
+            if (data.length > 0) {
+                res.status(200).json(data)
+            }
+            else {
+                res.status(404).json('Template not found, please input a valid template_id')
+            }
+        })
+        .catch(err =>
+            res.status(404).json({
+                message:
+                    'The data you are looking for could not be found. Please try again'
+            })
+        );
 })
 
 app.get('/users', (req, res) => {
