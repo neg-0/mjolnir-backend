@@ -23,6 +23,17 @@ describe('the /templates path', () => {
     });
 });
 
+describe('the /templates/:template_id path', () => {
+    it('returns the selected template when called by id in template table', async () => {
+        const res =await request(app)
+            .get('/templates/1')
+            .expect(200);
+
+            expect(res.body[0].title).toBe('letter to Santa');
+
+    });
+});
+
 describe('the /users', () => {
 
     it('returns "Please Input your User Name and Password"', async () => {
@@ -50,7 +61,7 @@ describe('the /users', () => {
 
 });
 
-describe('the /users/:users', () => {
+describe('the /users/:user', () => {
 
     it('get user credentials from database', async () => {
         const res = await request(app)
@@ -61,6 +72,28 @@ describe('the /users/:users', () => {
             expect(res.body[0].user_name).toBe("Mario")
     });
 
+});
 
+describe('the /users/:user/history', () => {
+
+    it('get the templates and serialized_options from a users history with one object', async () => {
+        const res = await request(app)
+            .get('/users/Mario/history')
+            .expect(200);
+
+            // console.log('res.body is:', res.body[0])
+            expect(res.body.template_body).toBe('long string here')
+            expect(res.body.serialized_options).toBe('user_2 supplied form data')
+    });
+
+    it('get the templates and serialized_options from a users history with one object', async () => {
+        const res = await request(app)
+            .get('/users/Floyd/history')
+            .expect(200);
+
+            // console.log('res.body is:', res.body[0])
+            expect(res.body.template_body).toBe('long string here')
+            expect(res.body.serialized_options).toBe('user_2 supplied form data')
+    });
 
 });

@@ -19,7 +19,24 @@ app.get('/templates', (req, res) => {
 app.get('/templates/:template_id', (req, res) => {
 
     let template_id = req.params.template_id
-    res.send("Please Select a Template")
+
+    knex.select('title')
+        .from('templates')
+        .where('id', template_id)
+        .then(data => {
+            if (data.length > 0) {
+                res.status(200).json(data)
+            }
+            else {
+                res.status(404).json('Template not found, please input a valid template_id')
+            }
+        })
+        .catch(err =>
+            res.status(404).json({
+                message:
+                    'The data you are looking for could not be found. Please try again'
+            })
+        );
 })
 
 app.get('/users', (req, res) => {
@@ -27,7 +44,7 @@ app.get('/users', (req, res) => {
     res.send("Please Input your User Name and Password")
 })
 
-app.post('/users', async(req, res) => {
+app.post('/users', async (req, res) => {
     let userFromBody = req.body.user_name
     let passwordFromBody = req.body.password
 
@@ -64,11 +81,83 @@ app.get('/users/:user', (req, res) => {
 
 
 
-app.get('/users/:users/history', (req, res) => {
+app.get('/users/:user/history', async(req, res) => {
+    let user = req.params.user
+    var userIdHist;
+    var templateIdHist = [];
+    var serializedOptionsHist = []; //want to return this as {template_body: templateBodyHist[i]}
+    var templateBodyHist = []; //want to return this as {template_body: templateBodyHist[i]}
+    var resultArr =[];
+
+
+    knex.select('id')
+        .from('users')
+        .where('user_name', user)
+        .then(data => {
+            //console.log('data is', data)
+            //console.log('user is', user)
+            userIdHist = data[0].id
+            console.log('user is', userIdHist)
+             knex.select('template_id', 'serialized_options')
+                .from('users_templates')
+                .where('user_id', userIdHist)
+                .then(async (data) => {
+                    //let {template_id} = data[0]
+
+
+                    if (data.length > 0) {
+                        console.log('data is:', data)
+                        for (let i = 0; i < data.length; i++) {
+                            templateIdHist.push(data[i].template_id);
+                            serializedOptionsHist.push(data[i].serialized_options);
+                        
+                        await knex.select('body')
+                            .from('templates')
+                            .where('id', templateIdHist[i])
+                            .then(data => {
+                                console.log('data for templates is', data)
+                                templateBodyHist.push(data[0].body)
+                                console.log('templateBodyHist is', templateBodyHist)
+                            })
+                        }
+                        //console.log('templateBodyHist is 2', templateBodyHist)
+                        //console.log('anything')
+                        //console.log('serializedOptionsHist is:', serialOptionsHist)
+                        //console.log('anything 2')
+                        
+                        for (let j=0; j<data.length; j++){
+                        console.log('templateBodyHist[j]', templateBodyHist[j])
+
+                        resultArr.push({'template_body': templateBodyHist[j], 'serialized_options': serializedOptionsHist[j]})
+                        }
+                        
+                        console.log('resultArr is', resultArr)
+                        res.status(200).send(resultArr)
+                    
+                        
+                    }
+
+
+                    
+                    else {
+                        res.status(404).json('User history not found')
+                    }
+                })
+                .catch(err =>
+                    res.status(404).json({
+                        message:
+                            'The data you are looking for could not be found. Please try again'
+                    })
+                );
+        })
+
+
+
+
 
 })
 
-app.get('/users/:users/favorites', (req, res) => {
+app.get('/users/:user/favorites', (req, res) => {
 
 })
 
