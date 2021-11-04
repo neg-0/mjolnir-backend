@@ -4,7 +4,7 @@ exports.up = function (knex) {
     table.string('title').notNullable();
     table.string('body');
     table.timestamps(true, true); // adds created_at and updated_at
-  
+
 });
 }
 
