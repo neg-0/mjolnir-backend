@@ -8,15 +8,193 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
 
-app.get('/', (req, res) => {
-    res.send("this is the Home screen")
+app.post('/users', async (req, res) => {
+    //create new user
+
+    let userFromBody = req.body.user_name
+    let passwordFromBody = req.body.password
+
+    await knex('users').insert({ user_name: userFromBody, password: passwordFromBody });
+
+    res.status(201).send('Posted user successfully')
+
+})
+
+app.get('/users/:user_name', (req, res) => {
+    //login/load user
+
+    let user = req.params.user_name
+
+    knex.select('id')
+        .from('users')
+        .where('user_name', user)
+        .then(data => {
+            if (data.length > 0) {
+                res.status(200).json(data)
+            }
+            else {
+                res.status(404).json('User not found, please input a different username')
+            }
+        })
+        .catch(err =>
+            res.status(404).json({
+                message:
+                    'The data you are looking for could not be found. Please try again'
+            })
+        );
+
+})
+
+
+
+
+
+
+
+
+
+//get user_id by user_name in url
+async function getUserIdByUserName(userName){
+    return await knex.select('id')
+               .from('users')
+               .where('user_name', userName)
+               .then(data => data[0].id)
+              
+
+}
+//get template id by user Id//produces a list of all templates created by user
+async function getTemplateIdHistoryByUserId(userId){
+    
+     return await knex.select('template_id')
+                     .from('users_templates')
+                     .where('user_id', userId)
+                     .then(async (data) =>{
+                         let valueArr =[];
+                         for(let n=0; n<data.length; n++){
+                             valueArr.push(data[n].template_id)
+                         }
+                         return valueArr
+                     })
+}
+
+//get template by id
+async function getTemplateByTemplateId(templateId) {
+    return await knex.select('*')
+                    .from('templates')
+                    .where('id', templateId)
+}
+//get template options by id
+async function getTemplateOptionsByTemplateId(templateId) {
+    return await knex.select('*')
+    .from('template_options')
+    .where('template_id', templateId)
+}
+//get serialized options by userID and templateId
+async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
+    return await knex.select('serialized_options')
+    .from('users_templates')
+    .where('template_id', templateId)
+    .andWhere('user_id', userId)
+}
+//return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
+async function getHistoryRecord(userId, templateId) {
+    let history = {}
+
+    history.template = await getTemplateByTemplateId(templateId)
+    history.template_options = await getTemplateOptionsByTemplateId(templateId)
+    history.serialized_options = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
+
+    return history
+}
+
+// async function getFullUserHistory(userName) {
+//     // Get all template options from user
+//     let userHistory = []
+
+//     for (let userTemplate of userTemplates) {
+//         userHistory.push(getUserHistory(userName, userTemplate))
+//     }
+
+//     res.json(userHistory)
+// }
+
+app.get('/users/:user_name/history', async (req, res) => {
+    //get history of created documents
+
+    let user = req.params.user_name
+
+    let userId = await getUserIdByUserName(user);
+
+    let historyArr =[];
+
+    let templateIdHist = await getTemplateIdHistoryByUserId(userId) //array of all templates_ids from users_templates
+
+    for(let i=0; i<templateIdHist.length; i++){
+        historyArr.push(await getHistoryRecord(userId, templateIdHist[i]))
+    }
+
+    res.send(historyArr)
+
+})
+
+/*
+{
+    template: {
+
+    }
+    template_options: [
+
+    ]
+    serialized_options: {
+
+    }
+}
+*/
+
+
+
+
+
+app.post('/users/:user_name/history', (req, res) => {
+    //post history POST
+    let user=req.params.user_name
+
+    knex.select('id')
+
+})
+
+app.patch('/users/:user_name/history', (req, res) => {
+    //patch history //:history is the history_id retrieved from get history
+
+})
+
+app.delete('/users/:user_name/history', (req, res) => {
+    //delete a doc from history
+
+})
+
+app.get('/users/:user_name/favorites', (req, res) => {
+    //get users favorites GET /users/:user_name/favorites
+
+})
+
+app.post('/users/:user_name/:template_id', (req, res) => {
+    //add to favorites
+
+})
+
+app.delete('/users/:user_name/:template_id', (req, res) => {
+    //delete a favorite DELETE /users/:user_name/:template_id
+
 })
 
 app.get('/templates', (req, res) => {
+    //get a list of all templates (id, title, body, options) 
     res.status(200).send("Please Select a Template")
 })
 
 app.get('/templates/:template_id', (req, res) => {
+    //get template body and options by id
 
     let template_id = req.params.template_id
 
@@ -38,131 +216,6 @@ app.get('/templates/:template_id', (req, res) => {
             })
         );
 })
-
-app.get('/users', (req, res) => {
-    // Returns users dummy data
-    res.send("Please Input your User Name and Password")
-})
-
-app.post('/users', async (req, res) => {
-    let userFromBody = req.body.user_name
-    let passwordFromBody = req.body.password
-
-    await knex('users').insert({ user_name: userFromBody, password: passwordFromBody });
-
-    res.status(201).send('Posted user successfully')
-
-})
-
-app.get('/users/:user', (req, res) => {
-    let user = req.params.user
-
-    knex.select('user_name', 'password')
-        .from('users')
-        .where('user_name', user)
-        .then(data => {
-            if (data.length > 0) {
-                res.status(200).json(data)
-            }
-            else {
-                res.status(404).json('User not found, please input a different username')
-            }
-        })
-        .catch(err =>
-            res.status(404).json({
-                message:
-                    'The data you are looking for could not be found. Please try again'
-            })
-        );
-
-
-
-})
-
-
-
-app.get('/users/:user/history', async(req, res) => {
-    let user = req.params.user
-    var userIdHist;
-    var templateIdHist = [];
-    var serializedOptionsHist = []; //want to return this as {template_body: templateBodyHist[i]}
-    var templateBodyHist = []; //want to return this as {template_body: templateBodyHist[i]}
-    var resultArr =[];
-
-
-    knex.select('id')
-        .from('users')
-        .where('user_name', user)
-        .then(data => {
-            //console.log('data is', data)
-            //console.log('user is', user)
-            userIdHist = data[0].id
-            console.log('user is', userIdHist)
-             knex.select('template_id', 'serialized_options')
-                .from('users_templates')
-                .where('user_id', userIdHist)
-                .then(async (data) => {
-                    //let {template_id} = data[0]
-
-
-                    if (data.length > 0) {
-                        console.log('data is:', data)
-                        for (let i = 0; i < data.length; i++) {
-                            templateIdHist.push(data[i].template_id);
-                            serializedOptionsHist.push(data[i].serialized_options);
-                        
-                        await knex.select('body')
-                            .from('templates')
-                            .where('id', templateIdHist[i])
-                            .then(data => {
-                                console.log('data for templates is', data)
-                                templateBodyHist.push(data[0].body)
-                                console.log('templateBodyHist is', templateBodyHist)
-                            })
-                        }
-                        //console.log('templateBodyHist is 2', templateBodyHist)
-                        //console.log('anything')
-                        //console.log('serializedOptionsHist is:', serialOptionsHist)
-                        //console.log('anything 2')
-                        
-                        for (let j=0; j<data.length; j++){
-                        console.log('templateBodyHist[j]', templateBodyHist[j])
-
-                        resultArr.push({'template_body': templateBodyHist[j], 'serialized_options': serializedOptionsHist[j]})
-                        }
-                        
-                        console.log('resultArr is', resultArr)
-                        res.status(200).send(resultArr)
-                    
-                        
-                    }
-
-
-                    
-                    else {
-                        res.status(404).json('User history not found')
-                    }
-                })
-                .catch(err =>
-                    res.status(404).json({
-                        message:
-                            'The data you are looking for could not be found. Please try again'
-                    })
-                );
-        })
-
-
-
-
-
-})
-
-app.get('/users/:user/favorites', (req, res) => {
-
-})
-
-
-
 
 
 let PORT = 3001
