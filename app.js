@@ -46,13 +46,6 @@ app.get('/users/:user_name', (req, res) => {
 })
 
 
-
-
-
-
-
-
-
 //get user_id by user_name in url
 async function getUserIdByUserName(userName){
     return await knex.select('id')
@@ -91,7 +84,7 @@ async function getTemplateOptionsByTemplateId(templateId) {
 }
 //get serialized options by userID and templateId
 async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
-    return await knex.select('serialized_options')
+    return await knex.select('history_id', 'serialized_options')
     .from('users_templates')
     .where('template_id', templateId)
     .andWhere('user_id', userId)
@@ -106,17 +99,6 @@ async function getHistoryRecord(userId, templateId) {
 
     return history
 }
-
-// async function getFullUserHistory(userName) {
-//     // Get all template options from user
-//     let userHistory = []
-
-//     for (let userTemplate of userTemplates) {
-//         userHistory.push(getUserHistory(userName, userTemplate))
-//     }
-
-//     res.json(userHistory)
-// }
 
 app.get('/users/:user_name/history', async (req, res) => {
     //get history of created documents
@@ -137,53 +119,45 @@ app.get('/users/:user_name/history', async (req, res) => {
 
 })
 
-/*
-{
-    template: {
-
-    }
-    template_options: [
-
-    ]
-    serialized_options: {
-
-    }
-}
-*/
 
 
-
-
-
-app.post('/users/:user_name/history', (req, res) => {
+app.post('/users/:user_name/history', async (req, res) => {
     //post history POST
-    let user=req.params.user_name
+    let user = req.params.user_name
+    let templateId = req.body.template_id
+    let serializedOptions =req.body.serialized_options
 
-    knex.select('id')
+    let userId = await getUserIdByUserName(user)
+    console.log(userId)
+
+    await knex('users_templates').insert({ user_id: userId, template_id: templateId, serialized_options: serializedOptions });
+
+    res.status(201).send('Posted history successfully')
 
 })
 
-app.patch('/users/:user_name/history', (req, res) => {
+app.patch('/users/:user_name/history', (req, res) => {//NOT DONE
     //patch history //:history is the history_id retrieved from get history
+    //replacing old serialized options with newly fed serialized
 
 })
 
-app.delete('/users/:user_name/history', (req, res) => {
+app.delete('/users/:user_name/history', (req, res) => {//NOT DONE
     //delete a doc from history
 
 })
 
-app.get('/users/:user_name/favorites', (req, res) => {
+app.get('/users/:user_name/favorites', (req, res) => { //NOT DONE
     //get users favorites GET /users/:user_name/favorites
 
 })
 
-app.post('/users/:user_name/:template_id', (req, res) => {
+app.post('/users/:user_name/:template_id', (req, res) => {//NOT DONE
     //add to favorites
 
 })
 
-app.delete('/users/:user_name/:template_id', (req, res) => {
+app.delete('/users/:user_name/:template_id', (req, res) => { //NOT DONE
     //delete a favorite DELETE /users/:user_name/:template_id
 
 })
@@ -198,7 +172,7 @@ app.get('/templates/:template_id', (req, res) => {
 
     let template_id = req.params.template_id
 
-    knex.select('title')
+    knex.select('*')
         .from('templates')
         .where('id', template_id)
         .then(data => {
