@@ -34,7 +34,7 @@ Installation and operation instructions. To run this app, please fork and clone 
 
 ---
 # API paths
-
+(include expectations here) eg. expects template_id and serialized_options in the body = (template_id, serialized_options)
 //create new user. include user_name and password in body
 - POST /users
 
@@ -80,3 +80,4 @@ Installation and operation instructions. To run this app, please fork and clone 
 - refactor to utilize arrays in db  (include options in templates table)
 - if favorites
 - fetch all templates refactor
+- implement ability to create new templates and options

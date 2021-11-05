@@ -28,21 +28,21 @@ async function getUserIdByUserName(userName) {
         return valueArr
       })
   }
-  
+
   //get template by id
   async function getTemplateByTemplateId(templateId) {
     return await knex.select('*')
       .from('templates')
       .where('id', templateId)
   }
-  
+
   //get template options by id
   async function getTemplateOptionsByTemplateId(templateId) {
     return await knex.select('*')
       .from('template_options')
       .where('template_id', templateId)
   }
-  
+
   //get serialized options by userID and templateId
   async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
     return await knex.select('history_id', 'serialized_options')
@@ -50,17 +50,23 @@ async function getUserIdByUserName(userName) {
       .where('template_id', templateId)
       .andWhere('user_id', userId)
   }
-  
+
   //return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
   async function getHistoryRecord(userId, templateId) {
     let history = {}
-  
+
     history.template = await getTemplateByTemplateId(templateId)
     history.template_options = await getTemplateOptionsByTemplateId(templateId)
     history.serialized_options = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
-  
+
     return history
   }
+
+//admin feature
+app.get('/users', async (req, res) => {
+  let userList = await knex('users').select('*')
+  res.json(userList)
+})
 
 //create new user
 app.post('/users', async (req, res) => {
@@ -180,6 +186,7 @@ app.delete('/users/:user_name/:template_id', async (req, res) => { //DONE
 })
 
 //get a list of all templates (id, title, body, options)
+//
 app.get('/templates', async (req, res) => {
   let templateTable = await knex.select('id', 'title', 'body')
     .from('templates')
