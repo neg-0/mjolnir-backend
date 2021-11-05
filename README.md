@@ -79,9 +79,6 @@ Installation and operation instructions. To run this app, please fork and clone 
 ---
 # STRETCH GOALS
 
-- implement ability to create new templates on front end and push them to backend
+- implement ability to create new templates/options on front end and push them to backend
 - implement login credentials and security
 - refactor to utilize arrays in db  (include options in templates table)
-- if favorites
-- fetch all templates refactor
-- implement ability to create new templates and options
