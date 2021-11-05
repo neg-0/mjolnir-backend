@@ -180,7 +180,7 @@ app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
     await knex('favorites').insert({ user_id: userId, template_id: templateId })
     res.status(201).send(`Favorite Successfully Added`)
   }else{
-      res.send('Did not post favorite, this favorite already exists')
+      res.status(304).send('Favorite not sent, duplicate.')
   }
 
 })
