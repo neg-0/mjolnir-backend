@@ -8,6 +8,60 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
+//get user_id by user_name in url
+async function getUserIdByUserName(userName) {
+    return await knex.select('id')
+      .from('users')
+      .where('user_name', userName)
+      .then(data => data[0].id)
+  }
+  //get template id by user Id//produces a list of all templates created by user
+  async function getTemplateIdHistoryByUserId(userId) {
+    return await knex.select('template_id')
+      .from('users_templates')
+      .where('user_id', userId)
+      .then(async (data) => {
+        let valueArr = [];
+        for (let n = 0; n < data.length; n++) {
+          valueArr.push(data[n].template_id)
+        }
+        return valueArr
+      })
+  }
+  
+  //get template by id
+  async function getTemplateByTemplateId(templateId) {
+    return await knex.select('*')
+      .from('templates')
+      .where('id', templateId)
+  }
+  
+  //get template options by id
+  async function getTemplateOptionsByTemplateId(templateId) {
+    return await knex.select('*')
+      .from('template_options')
+      .where('template_id', templateId)
+  }
+  
+  //get serialized options by userID and templateId
+  async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
+    return await knex.select('history_id', 'serialized_options')
+      .from('users_templates')
+      .where('template_id', templateId)
+      .andWhere('user_id', userId)
+  }
+  
+  //return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
+  async function getHistoryRecord(userId, templateId) {
+    let history = {}
+  
+    history.template = await getTemplateByTemplateId(templateId)
+    history.template_options = await getTemplateOptionsByTemplateId(templateId)
+    history.serialized_options = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
+  
+    return history
+  }
+
 //create new user
 app.post('/users', async (req, res) => {
   let userFromBody = req.body.user_name
@@ -41,60 +95,6 @@ app.get('/users/:user_name', (req, res) => {
     );
 })
 
-//get user_id by user_name in url
-async function getUserIdByUserName(userName) {
-  return await knex.select('id')
-    .from('users')
-    .where('user_name', userName)
-    .then(data => data[0].id)
-}
-//get template id by user Id//produces a list of all templates created by user
-async function getTemplateIdHistoryByUserId(userId) {
-  return await knex.select('template_id')
-    .from('users_templates')
-    .where('user_id', userId)
-    .then(async (data) => {
-      let valueArr = [];
-      for (let n = 0; n < data.length; n++) {
-        valueArr.push(data[n].template_id)
-      }
-      return valueArr
-    })
-}
-
-//get template by id
-async function getTemplateByTemplateId(templateId) {
-  return await knex.select('*')
-    .from('templates')
-    .where('id', templateId)
-}
-
-//get template options by id
-async function getTemplateOptionsByTemplateId(templateId) {
-  return await knex.select('*')
-    .from('template_options')
-    .where('template_id', templateId)
-}
-
-//get serialized options by userID and templateId
-async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
-  return await knex.select('history_id', 'serialized_options')
-    .from('users_templates')
-    .where('template_id', templateId)
-    .andWhere('user_id', userId)
-}
-
-//return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
-async function getHistoryRecord(userId, templateId) {
-  let history = {}
-
-  history.template = await getTemplateByTemplateId(templateId)
-  history.template_options = await getTemplateOptionsByTemplateId(templateId)
-  history.serialized_options = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
-
-  return history
-}
-
 //get history of created documents
 app.get('/users/:user_name/history', async (req, res) => {
   let user = req.params.user_name
@@ -121,7 +121,7 @@ app.post('/users/:user_name/history', async (req, res) => {
   res.status(201).send('Posted history successfully')
 })
 
-//replacing old serialized options with newly fed serialized
+//replacing old serialized options with newly fed serialized_options
 app.patch('/users/:user_name/history', async (req, res) => {//DONE
   await knex('users_templates')
     .where({ 'history_id': req.body.history_id })
