@@ -35,22 +35,20 @@ Installation and operation instructions. To run this app, please fork and clone 
 ---
 # API paths
 
-//select user name
-- GET /users
-
-//create new user
+//create new user. include user_name and password in body
 - POST /users
 
-//login/load user
+//gets user_id
 - GET /users/:user_name
 
-//get history of created documents
+//get history of created documents for selected user
 - GET /users/:user_name/history
 
-//post history
+//post history. adds cmpltd doc to DB. expects template_id and serialized_options in the body
 - POST /users/:user_name/history
+(include expectations here)
 
-//patch history
+//patch history. expect serialized_options update to be in body
 - PATCH /users/:user_name/history
 
 //delete a doc from history
@@ -80,3 +78,5 @@ Installation and operation instructions. To run this app, please fork and clone 
 - implement ability to create new templates on front end and push them to backend
 - implement login credentials and security
 - refactor to utilize arrays in db  (include options in templates table)
+- if favorites
+- fetch all templates refactor
