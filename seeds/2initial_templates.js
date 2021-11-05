@@ -6,16 +6,8 @@ exports.seed = function (knex) {
       // Inserts seed entries
       return knex('templates').insert([
         {
-          title: 'Letter to Santa', body: `Dear Santa,
-        My name is {NAME}. I am {AGE} years old. I'm really looking forward to Christmas and your visit! I've been really good this year - well, mostly!
-        There are a few very special things I would really like. They are:
-
-        {ITEM_LIST}
-
-        Your friend,
-        {NAME}
-
-        {SALUTATION}` },
+          title: 'Letter to Santa', body: "## Dear Santa,\nMy name is {NAME}. I am {AGE} years old. I'm really looking forward to Christmas and your visit! I've been a really {DISPOSITION} {GENDER} this year!\nThere are a few very special things I would really like. They are:\n\n{ITEM_LIST}\n\nYour friend,\n{NAME}\n\n{SALUTATION}"
+        },
         {
           title: 'Letter to ex', body: `Dear {BF},
           Things have been bad for a while. And it is all your fault. Whether through ignorance or lack of mental fortitude you have failed to notice and reconcile your attitude/behavior. I will thus be taking:
