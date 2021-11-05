@@ -41,6 +41,8 @@ async function getTemplateOptionsByTemplateId(templateId) {
   return await knex.select('*')
     .from('template_options')
     .where('template_id', templateId)
+    .then(arr => arr.map((obj => { return { ...obj, option_text: JSON.parse(obj.option_text) } })))
+
 }
 
 //get serialized options by userID and templateId
@@ -49,6 +51,7 @@ async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
     .from('users_templates')
     .where('template_id', templateId)
     .andWhere('user_id', userId)
+    .then(arr => arr.map((obj => { return { history_id: obj.history_id, serialized_options: JSON.parse(obj.serialized_options) } })))
 }
 
 //return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
@@ -119,7 +122,7 @@ app.get('/users/:user_name/history', async (req, res) => {
 app.post('/users/:user_name/history', async (req, res) => {
   let user = req.params.user_name
   let templateId = req.body.template_id
-  let serializedOptions = req.body.serialized_options
+  let serializedOptions = JSON.stringify(req.body.serialized_options)
   let userId = await getUserIdByUserName(user)
 
   await knex('users_templates').insert({ user_id: userId, template_id: templateId, serialized_options: serializedOptions });
@@ -129,9 +132,10 @@ app.post('/users/:user_name/history', async (req, res) => {
 
 //replacing old serialized options with newly fed serialized_options
 app.patch('/users/:user_name/history', async (req, res) => {//DONE
+  let serializedOptions = JSON.stringify(req.body.serialized_options)
   await knex('users_templates')
     .where({ 'history_id': req.body.history_id })
-    .update({ serialized_options: req.body.serialized_options })
+    .update({ serialized_options: serializedOptions })
 
   res.status(200).send('Document updated')
 })
