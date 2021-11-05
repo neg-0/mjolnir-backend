@@ -169,8 +169,6 @@ app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
   let userId = await getUserIdByUserName(user)
   let templateId = parseInt(req.params.template_id, 10)
 
-  console.log('templateId is:', templateId)
-
   let favorites = await knex.select('template_id')
     .from('favorites')
     .where('user_id', userId)
@@ -178,19 +176,12 @@ app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
       let favoriteTemplateId = await data.map((element) => element.template_id)
       return favoriteTemplateId
     })
-    console.log('favorites are:' , favorites)
   if(favorites.includes(templateId)===false){
     await knex('favorites').insert({ user_id: userId, template_id: templateId })
     res.status(201).send(`Favorite Successfully Added`)
   }else{
       res.send('Did not post favorite, this favorite already exists')
   }
-
-  
-
-
-
-
 
 })
 
@@ -221,7 +212,7 @@ app.get('/templates', async (req, res) => {
       .from('template_options')
       .where('template_id', i.id)
 
-    templateOutput.push({ templates: template, template_options: templateOptions })
+    templateOutput.push({ templates: template[0], template_options: templateOptions })
   }
 
   res.status(200).json(templateOutput)
@@ -239,7 +230,7 @@ app.get('/templates/:template_id', async (req, res) => {
     .from('template_options')
     .where('template_id', templateId)
 
-  let templateOutput = { template: template, template_options: templateOptions }
+  let templateOutput = { template: template[0], template_options: templateOptions }
 
   res.status(200).send(templateOutput)
 })
