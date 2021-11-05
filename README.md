@@ -35,6 +35,10 @@ Installation and operation instructions. To run this app, please fork and clone 
 ---
 # API paths
 (include expectations here) eg. expects template_id and serialized_options in the body = (template_id, serialized_options)
+
+//admin feature gets a list of all users
+- GET /users
+
 //create new user. include user_name and password in body
 - POST /users
 

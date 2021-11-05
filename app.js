@@ -10,57 +10,57 @@ app.use(cors())
 
 //get user_id by user_name in url
 async function getUserIdByUserName(userName) {
-    return await knex.select('id')
-      .from('users')
-      .where('user_name', userName)
-      .then(data => data[0].id)
-  }
-  //get template id by user Id//produces a list of all templates created by user
-  async function getTemplateIdHistoryByUserId(userId) {
-    return await knex.select('template_id')
-      .from('users_templates')
-      .where('user_id', userId)
-      .then(async (data) => {
-        let valueArr = [];
-        for (let n = 0; n < data.length; n++) {
-          valueArr.push(data[n].template_id)
-        }
-        return valueArr
-      })
-  }
+  return await knex.select('id')
+    .from('users')
+    .where('user_name', userName)
+    .then(data => data[0].id)
+}
+//get template id by user Id//produces a list of all templates created by user
+async function getTemplateIdHistoryByUserId(userId) {
+  return await knex.select('template_id')
+    .from('users_templates')
+    .where('user_id', userId)
+    .then(async (data) => {
+      let valueArr = [];
+      for (let n = 0; n < data.length; n++) {
+        valueArr.push(data[n].template_id)
+      }
+      return valueArr
+    })
+}
 
-  //get template by id
-  async function getTemplateByTemplateId(templateId) {
-    return await knex.select('*')
-      .from('templates')
-      .where('id', templateId)
-  }
+//get template by id
+async function getTemplateByTemplateId(templateId) {
+  return await knex.select('*')
+    .from('templates')
+    .where('id', templateId)
+}
 
-  //get template options by id
-  async function getTemplateOptionsByTemplateId(templateId) {
-    return await knex.select('*')
-      .from('template_options')
-      .where('template_id', templateId)
-  }
+//get template options by id
+async function getTemplateOptionsByTemplateId(templateId) {
+  return await knex.select('*')
+    .from('template_options')
+    .where('template_id', templateId)
+}
 
-  //get serialized options by userID and templateId
-  async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
-    return await knex.select('history_id', 'serialized_options')
-      .from('users_templates')
-      .where('template_id', templateId)
-      .andWhere('user_id', userId)
-  }
+//get serialized options by userID and templateId
+async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
+  return await knex.select('history_id', 'serialized_options')
+    .from('users_templates')
+    .where('template_id', templateId)
+    .andWhere('user_id', userId)
+}
 
-  //return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
-  async function getHistoryRecord(userId, templateId) {
-    let history = {}
+//return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
+async function getHistoryRecord(userId, templateId) {
+  let history = {}
 
-    history.template = await getTemplateByTemplateId(templateId)
-    history.template_options = await getTemplateOptionsByTemplateId(templateId)
-    history.serialized_options = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
+  history.template = await getTemplateByTemplateId(templateId)
+  history.template_options = await getTemplateOptionsByTemplateId(templateId)
+  history.serialized_options = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
 
-    return history
-  }
+  return history
+}
 
 //admin feature
 app.get('/users', async (req, res) => {
@@ -186,17 +186,25 @@ app.delete('/users/:user_name/:template_id', async (req, res) => { //DONE
 })
 
 //get a list of all templates (id, title, body, options)
-//
 app.get('/templates', async (req, res) => {
   let templateTable = await knex.select('id', 'title', 'body')
     .from('templates')
 
-  let templateOptionsTable = await knex.select('*')
-    .from('template_options')
+  let templateOutput = [];
 
-  let templateOutput = { templateTable: templateTable, template_options: templateOptionsTable }
+  for (let i of templateTable) {
+    let template = await knex.select('id', 'title', 'body')
+      .from('templates')
+      .where('id', i.id)
 
-  res.status(200).send(templateOutput)
+    let templateOptions = await knex.select('*')
+      .from('template_options')
+      .where('template_id', i.id)
+
+    templateOutput.push({ templates: template, template_options: templateOptions })
+  }
+
+  res.status(200).json(templateOutput)
 })
 
 //get template body and options by id
