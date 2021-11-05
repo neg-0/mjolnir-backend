@@ -167,11 +167,31 @@ app.get('/users/:user_name/favorites', async (req, res) => { //DONE
 app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
   let user = req.params.user_name;
   let userId = await getUserIdByUserName(user)
-  let templateId = req.params.template_id
+  let templateId = parseInt(req.params.template_id, 10)
 
-  await knex('favorites').insert({ user_id: userId, template_id: templateId })
+  console.log('templateId is:', templateId)
 
-  res.status(201).send(`Favorite Successfully Added`)
+  let favorites = await knex.select('template_id')
+    .from('favorites')
+    .where('user_id', userId)
+    .then(async (data) => {
+      let favoriteTemplateId = await data.map((element) => element.template_id)
+      return favoriteTemplateId
+    })
+    console.log('favorites are:' , favorites)
+  if(favorites.includes(templateId)===false){
+    await knex('favorites').insert({ user_id: userId, template_id: templateId })
+    res.status(201).send(`Favorite Successfully Added`)
+  }else{
+      res.send('Did not post favorite, this favorite already exists')
+  }
+
+  
+
+
+
+
+
 })
 
 //delete a favorite DELETE /users/:user_name/:template_id
