@@ -42,7 +42,16 @@ exports.seed = function (knex) {
         all the best. If I can be of any help during the transition, please don't hesitate to ask.
 
         Sincerely,
-        {YOUR_NAME}`}
+        {YOUR_NAME}`},
+        {
+          title: 'Formy McForm', body: `This form is form filling practice for those with too much time on their hands and have made the TERRIBLE choice to fill out this form. Please input your name here ({ NAME }).
+
+          If you have made it this far and still wish to continue, input you Age: ({ AGE }) & Height: ({ HEIGHT }), after inputting the information please take a moment to stop, pause..., and think about how you spend your time. This was a { TIME_SPENT } use of your time.
+
+          Thank you { NAME } for filling out this form.
+
+          In the future please find a better use of your time!`
+        }
       ]);
     });
 };

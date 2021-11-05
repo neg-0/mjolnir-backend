@@ -21,7 +21,11 @@ exports.seed = function (knex) {
         { template_id: 3, option_name: 'COMPANY_NAME', option_type: 'string', option_text: "Company" },
         { template_id: 3, option_name: 'YEARS', option_type: 'string', option_text: "##" },
         { template_id: 3, option_name: 'LIST_OF_THINGS', option_type: 'unordered_list', option_text: JSON.stringify("something", "more stuff") },
-        { template_id: 3, option_name: 'YOUR_NAME', option_type: 'string', option_text: "McLovin" }
+        { template_id: 3, option_name: 'YOUR_NAME', option_type: 'string', option_text: "McLovin" },
+        { template_id: 4, option_name: 'NAME', option_type: 'string', option_text: " name " },
+        { template_id: 4, option_name: 'AGE', option_type: 'number', option_text: "69" },
+        { template_id: 4, option_name: 'HEIGHT', option_type: 'number', option_text: "5.9" },
+        { template_id: 4, option_name: 'TIME_SPENT', option_type: 'dropdown', option_text: JSON.stringify(["terrible", "inefficient", "sad", ">:neutral_face:", "regretful", "productive"])}
       ]);
     });
 };
