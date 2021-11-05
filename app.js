@@ -212,11 +212,9 @@ app.get('/templates', async (req, res) => {
       .from('templates')
       .where('id', i.id)
 
-    let templateOptions = await knex.select('*')
-      .from('template_options')
-      .where('template_id', i.id)
+    template_options = await getTemplateOptionsByTemplateId(i.id)
 
-    templateOutput.push({ templates: template[0], template_options: templateOptions })
+    templateOutput.push({ template: template[0], template_options })
   }
 
   res.status(200).json(templateOutput)
@@ -230,11 +228,9 @@ app.get('/templates/:template_id', async (req, res) => {
     .from('templates')
     .where('id', templateId)
 
-  let templateOptions = await knex.select('*')
-    .from('template_options')
-    .where('template_id', templateId)
+  template_options = await getTemplateOptionsByTemplateId(templateId)
 
-  let templateOutput = { template: template[0], template_options: templateOptions }
+  let templateOutput = { template: template[0], template_options }
 
   res.status(200).send(templateOutput)
 })
