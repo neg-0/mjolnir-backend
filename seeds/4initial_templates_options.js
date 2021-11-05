@@ -10,7 +10,7 @@ exports.seed = function (knex) {
         { template_id: 1, option_id: 3, option_name: 'DISPOSITION', option_type: 'dropdown', option_text: "['good', 'bad']" },
         { template_id: 1, option_id: 4, option_name: 'GENDER', option_type: 'dropdown', option_text: "['boy, 'girl']" },
         { template_id: 1, option_id: 5, option_name: 'ITEM_LIST', option_type: 'unordered_list', option_text: "['train set', 'pony', 'transformer']" },
-        { template_id: 1, option_id: 5, option_name: 'SALUTATION', option_type: 'boolean', option_text: "Merry Christmas" }
+        { template_id: 1, option_id: 6, option_name: 'SALUTATION', option_type: 'boolean', option_text: "Merry Christmas" }
       ]);
     });
 };
