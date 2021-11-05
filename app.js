@@ -176,11 +176,11 @@ app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
       let favoriteTemplateId = await data.map((element) => element.template_id)
       return favoriteTemplateId
     })
-  if(favorites.includes(templateId)===false){
+  if (favorites.includes(templateId) === false) {
     await knex('favorites').insert({ user_id: userId, template_id: templateId })
     res.status(201).send(`Favorite Successfully Added`)
-  }else{
-      res.status(304).send('Favorite not sent, duplicate.')
+  } else {
+    res.status(304).send('Favorite not sent, duplicate.')
   }
 
 })
