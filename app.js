@@ -126,9 +126,12 @@ app.post('/users/:user_name/history', async (req, res) => {
   let serializedOptions = JSON.stringify(req.body.serialized_options)
   let userId = await getUserIdByUserName(user)
 
-  await knex('users_templates').insert({ user_id: userId, template_id: templateId, serialized_options: serializedOptions });
-
-  res.status(201).send('Posted history successfully')
+  await knex('users_templates')
+    .insert({ user_id: userId, template_id: templateId, serialized_options: serializedOptions })
+    .returning('*')
+    .then(history => {
+      res.status(201).json(history)
+    });
 })
 
 //replacing old serialized options with newly fed serialized_options
