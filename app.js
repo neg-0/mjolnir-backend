@@ -34,6 +34,7 @@ async function getTemplateByTemplateId(templateId) {
   return await knex.select('*')
     .from('templates')
     .where('id', templateId)
+    .then(template => template[0])
 }
 
 //get template options by id
