@@ -86,7 +86,7 @@ async function getHistoryRecord(userId, templateId) {
 
   history.template = await getTemplateByTemplateId(templateId)
   history.template_options = await getTemplateOptionsByTemplateId(templateId)
-  history.serialized_options = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
+  history.history_object = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
 
   return history
 }
@@ -137,10 +137,10 @@ app.get('/users/:user_name/history', async (req, res) => {
   let historyArr = [];
   let serializedOptionsArray = await getSerializedOptionsByUserId(userId) //array of all serializedOptions from users_templates
 
-  for (let serialized_options of serializedOptionsArray) {
-    let template = await getTemplateByTemplateId(serialized_options.template_id)
-    let template_options = await getTemplateOptionsByTemplateId(serialized_options.template_id)
-    historyArr.push({ serialized_options, template, template_options })
+  for (let history_object of serializedOptionsArray) {
+    let template = await getTemplateByTemplateId(history_object.template_id)
+    let template_options = await getTemplateOptionsByTemplateId(history_object.template_id)
+    historyArr.push({ history_object, template, template_options })
   }
   // for (let i = 0; i < templateIdHist.length; i++) {
   //   historyArr.push(await getHistoryRecord(userId, templateIdHist[i]))
@@ -166,11 +166,11 @@ app.get('/history/:history_id', async (req, res) => {
     return
   }
 
-  let serialized_options = options[0]
-  let template = await getTemplateByTemplateId(serialized_options.template_id)
-  let template_options = await getTemplateOptionsByTemplateId(serialized_options.template_id)
+  let history_object = options[0]
+  let template = await getTemplateByTemplateId(history_object.template_id)
+  let template_options = await getTemplateOptionsByTemplateId(history_object.template_id)
 
-  let historyObject = { serialized_options, template, template_options }
+  let historyObject = { history_object, template, template_options }
 
   res.json(historyObject)
 })
@@ -192,11 +192,15 @@ app.post('/users/:user_name/history', async (req, res) => {
 })
 
 //replacing old serialized options with newly fed serialized_options
-app.patch('/users/:user_name/history', async (req, res) => {//DONE
+app.patch('/history', async (req, res) => {//DONE
   let serialized_options = JSON.stringify(req.body.serialized_options)
+  let history_id = req.body.history_id
+  let file_name = req.body.file_name
+
+  console.log(history_id, serialized_options, file_name)
   await knex('users_templates')
-    .where({ 'history_id': req.body.history_id })
-    .update({ serialized_options })
+    .where('history_id', history_id)
+    .update({ serialized_options, file_name })
 
   res.status(200).send('Document updated')
 })
