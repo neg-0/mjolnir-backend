@@ -4,7 +4,7 @@ exports.up = function (knex) {
         table.integer('template_id').references('id').inTable('templates');
         table.string('option_name').notNullable();
         table.string('option_type').notNullable();
-        table.string('option_text').notNullable();
+        table.json('option_value').notNullable();
         table.timestamps(true, true); // adds created_at and updated_at
     });
 };
