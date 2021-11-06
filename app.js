@@ -13,7 +13,12 @@ async function getUserIdByUserName(userName) {
   return await knex.select('id')
     .from('users')
     .where('user_name', userName)
-    .then(data => data[0].id)
+    .then(data => {
+      if (data.length === 0) {
+        return null
+      }
+      return data[0].id
+    })
 }
 //get template id by user Id//produces a list of all templates created by user
 async function getTemplateIdHistoryByUserId(userId) {
@@ -160,6 +165,12 @@ app.delete('/users/:user_name/history', async (req, res) => {//DONE
 app.get('/users/:user_name/favorites', async (req, res) => { //DONE
   let user = req.params.user_name;
   let userId = await getUserIdByUserName(user)
+
+  // If userId is not found, send back empty array
+  if (!userId) {
+    res.json([])
+    return
+  }
 
   let favorites = await knex.select('template_id')
     .from('favorites')
