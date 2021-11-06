@@ -3,7 +3,8 @@ exports.up = function (knex) {
     table.increments('history_id'); // adds an auto incrementing PK column
     table.integer('user_id').references('id').inTable('users');
     table.integer('template_id').references('id').inTable('templates');
-    table.string('serialized_options');
+    table.string('file_name').notNullable()
+    table.json('serialized_options');
     table.timestamps(true, true); // adds created_at and updated_at
   });
 }
