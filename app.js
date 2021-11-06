@@ -42,17 +42,17 @@ async function getTemplateOptionsByTemplateId(templateId) {
   return await knex.select('*')
     .from('template_options')
     .where('template_id', templateId)
-    .then(arr => arr.map((obj => { return { ...obj, option_text: JSON.parse(obj.option_text) } })))
+  // .then(arr => arr.map((obj => { return { ...obj, option_value: JSON.parse(obj.option_value) } })))
 
 }
 
 //get serialized options by userID and templateId
 async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
-  return await knex.select('history_id', 'serialized_options')
+  return await knex.select('history_id', 'file_name', 'serialized_options')
     .from('users_templates')
     .where('template_id', templateId)
     .andWhere('user_id', userId)
-    .then(arr => arr.map((obj => { return { history_id: obj.history_id, serialized_options: JSON.parse(obj.serialized_options) } })))
+  // .then(arr => arr.map((obj => { return { history_id: obj.history_id, serialized_options: JSON.parse(obj.serialized_options) } })))
 }
 
 //return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
@@ -122,12 +122,13 @@ app.get('/users/:user_name/history', async (req, res) => {
 //post history POST
 app.post('/users/:user_name/history', async (req, res) => {
   let user = req.params.user_name
-  let templateId = req.body.template_id
-  let serializedOptions = JSON.stringify(req.body.serialized_options)
-  let userId = await getUserIdByUserName(user)
+  let template_id = req.body.template_id
+  let file_name = req.body.file_name
+  let serialized_options = JSON.stringify(req.body.serialized_options)
+  let user_id = await getUserIdByUserName(user)
 
   await knex('users_templates')
-    .insert({ user_id: userId, template_id: templateId, serialized_options: serializedOptions })
+    .insert({ user_id, template_id, file_name, serialized_options })
     .returning('*')
     .then(history => {
       res.status(201).json(history)
