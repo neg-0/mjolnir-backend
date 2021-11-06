@@ -8,7 +8,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
-//get user_id by user_name in url
+//get user_id by user_name
 async function getUserIdByUserName(userName) {
   return await knex.select('id')
     .from('users')
@@ -20,7 +20,8 @@ async function getUserIdByUserName(userName) {
       return data[0].id
     })
 }
-//get template id by user Id//produces a list of all templates created by user
+
+//get template_id by user_id //produces a list of template_id's of all docs associated with user_id
 async function getTemplateIdHistoryByUserId(userId) {
   return await knex.select('template_id')
     .from('users_templates')
@@ -34,7 +35,7 @@ async function getTemplateIdHistoryByUserId(userId) {
     })
 }
 
-//get template by id
+//get template by template_id
 async function getTemplateByTemplateId(templateId) {
   return await knex.select('*')
     .from('templates')
@@ -42,16 +43,15 @@ async function getTemplateByTemplateId(templateId) {
     .then(template => template[0])
 }
 
-//get template options by id
+//get template options by template_id
 async function getTemplateOptionsByTemplateId(templateId) {
   return await knex.select('*')
     .from('template_options')
     .where('template_id', templateId)
   // .then(arr => arr.map((obj => { return { ...obj, option_value: JSON.parse(obj.option_value) } })))
-
 }
 
-//get serialized options by userID and templateId
+//get serialized options by user_id and template_id
 async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
   return await knex.select('*')
     .from('users_templates')
@@ -66,30 +66,43 @@ async function getSerializedOptions() {
     .from('users_templates')
 }
 
-//get serialized options by userID
+//get serialized options by user_id
 async function getSerializedOptionsByUserId(userId) {
   return await knex.select('*')
     .from('users_templates')
     .where('user_id', userId)
 }
 
-//get serialized options by userID and templateId
+//get serialized options by history_id
 async function getSerializedOptionsByHistoryId(historyId) {
   return await knex.select('*')
     .from('users_templates')
     .where('history_id', historyId)
-}
+  }
 
-//return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
-async function getHistoryRecord(userId, templateId) {
-  let history = {}
+  //returns {template: [], template_options: [], serialized_options: [{}]}
+  async function getHistoryRecord(userId, templateId) {
+    let history = {}
 
-  history.template = await getTemplateByTemplateId(templateId)
-  history.template_options = await getTemplateOptionsByTemplateId(templateId)
-  history.history_object = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
+    history.template = await getTemplateByTemplateId(templateId)
+    history.template_options = await getTemplateOptionsByTemplateId(templateId)
+    history.history_object = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
 
-  return history
-}
+    return history
+  }
+
+  async function getHistoryByUserId(userId) {
+    let historyArr = [];
+    let serializedOptionsArray = await getSerializedOptionsByUserId(userId) //array of all userId's serializedOptions from users_templates
+
+    for (let history_object of serializedOptionsArray) {
+      let template = await getTemplateByTemplateId(history_object.template_id)
+      let template_options = await getTemplateOptionsByTemplateId(history_object.template_id)
+      historyArr.push({ history_object, template, template_options })
+    }
+
+    return historyArr
+  }
 
 //admin feature
 app.get('/users', async (req, res) => {
@@ -130,19 +143,6 @@ app.get('/users/:user_name', (req, res) => {
     );
 })
 
-async function getHistoryByUserId(userId) {
-  let historyArr = [];
-  let serializedOptionsArray = await getSerializedOptionsByUserId(userId) //array of all serializedOptions from users_templates
-
-  for (let history_object of serializedOptionsArray) {
-    let template = await getTemplateByTemplateId(history_object.template_id)
-    let template_options = await getTemplateOptionsByTemplateId(history_object.template_id)
-    historyArr.push({ history_object, template, template_options })
-  }
-
-  return historyArr
-}
-
 //get history of created documents
 app.get('/users/:user_name/history', async (req, res) => {
   let user = req.params.user_name
@@ -159,7 +159,7 @@ app.get('/history', async (req, res) => {
   res.json(options)
 })
 
-//get history of single document by id
+//get document by history_id
 app.get('/history/:history_id', async (req, res) => {
   let history_id = req.params.history_id
 
@@ -179,7 +179,7 @@ app.get('/history/:history_id', async (req, res) => {
   res.json(historyObject)
 })
 
-//post history POST
+//post history
 app.post('/users/:user_name/history', async (req, res) => {
   let user = req.params.user_name
   let template_id = req.body.template_id
@@ -196,12 +196,11 @@ app.post('/users/:user_name/history', async (req, res) => {
 })
 
 //replacing old serialized options with newly fed serialized_options
-app.patch('/history', async (req, res) => {//DONE
+app.patch('/history', async (req, res) => {
   let serialized_options = JSON.stringify(req.body.serialized_options)
   let history_id = req.body.history_id
   let file_name = req.body.file_name
 
-  console.log(history_id, serialized_options, file_name)
   let newHistory = await knex('users_templates')
     .where('history_id', history_id)
     .update({ serialized_options, file_name })
@@ -211,7 +210,7 @@ app.patch('/history', async (req, res) => {//DONE
 })
 
 //delete a doc from history
-app.delete('/users/:user_name/history/:history_id', async (req, res) => {//DONE
+app.delete('/users/:user_name/history/:history_id', async (req, res) => {
   let user = req.params.user_name
   let idToDelete = parseInt(req.params.history_id)
 
@@ -220,18 +219,16 @@ app.delete('/users/:user_name/history/:history_id', async (req, res) => {//DONE
     .del()
 
   let user_id = await getUserIdByUserName(user)
-
   let history = await getHistoryByUserId(user_id)
 
   res.json(history)
 })
 
 //get users favorites GET /users/:user_name/favorites
-app.get('/users/:user_name/favorites', async (req, res) => { //DONE
+app.get('/users/:user_name/favorites', async (req, res) => {
   let user = req.params.user_name;
   let userId = await getUserIdByUserName(user)
 
-  // If userId is not found, send back empty array
   if (!userId) {
     res.status(404).send('User not found')
     return
@@ -249,7 +246,7 @@ app.get('/users/:user_name/favorites', async (req, res) => { //DONE
 })
 
 //add to favorites
-app.post('/users/:user_name/favorites/:template_id', async (req, res) => {//DONE
+app.post('/users/:user_name/favorites/:template_id', async (req, res) => {
   let user = req.params.user_name;
   let userId = await getUserIdByUserName(user)
   let templateId = parseInt(req.params.template_id, 10)
@@ -276,8 +273,8 @@ app.post('/users/:user_name/favorites/:template_id', async (req, res) => {//DONE
   res.status(201).json(favorites)
 })
 
-//delete a favorite DELETE /users/:user_name/:template_id
-app.delete('/users/:user_name/favorites/:template_id', async (req, res) => { //DONE
+//delete a favorite
+app.delete('/users/:user_name/favorites/:template_id', async (req, res) => {
   let userId = await getUserIdByUserName(req.params.user_name)
   await knex('favorites')
     .select('template_id')
