@@ -219,7 +219,7 @@ app.get('/users/:user_name/favorites', async (req, res) => { //DONE
 
   // If userId is not found, send back empty array
   if (!userId) {
-    res.json([])
+    res.status(404).send('User not found')
     return
   }
 
@@ -252,7 +252,7 @@ app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
     let favorites = await knex('favorites').insert({ user_id: userId, template_id: templateId }).returning('template_id')
     res.status(201).json(favorites)
   } else {
-    res.status(304).send('Favorite not sent, duplicate.')
+    res.status(200).json(favorites)
   }
 
 })
@@ -266,9 +266,14 @@ app.delete('/users/:user_name/:template_id', async (req, res) => { //DONE
     .andWhere('template_id', req.params.template_id)
     .del()
 
-  let newFavorites = await knex('favorites')
-    .select('template_id')
+  let newFavorites = await knex.select('template_id')
+    .from('favorites')
     .where('user_id', userId)
+    .then(async (data) => {
+      let favoriteTemplateId = await data.map((element) => element.template_id)
+      return favoriteTemplateId
+    })
+
 
   res.json(newFavorites)
 })
