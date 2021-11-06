@@ -116,7 +116,7 @@ app.get('/users/:user_name', (req, res) => {
     .where('user_name', user)
     .then(data => {
       if (data.length > 0) {
-        res.status(200).json(data)
+        res.status(200).json(data[0])
       }
       else {
         res.status(404).json('User not found, please input a different username')
