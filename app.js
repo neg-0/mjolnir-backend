@@ -91,7 +91,7 @@ app.post('/users', async (req, res) => {
 app.get('/users/:user_name', (req, res) => {
   let user = req.params.user_name
 
-  knex.select('id')
+  knex.select('id', 'user_name')
     .from('users')
     .where('user_name', user)
     .then(data => {
