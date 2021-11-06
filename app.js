@@ -137,10 +137,10 @@ app.post('/users/:user_name/history', async (req, res) => {
 
 //replacing old serialized options with newly fed serialized_options
 app.patch('/users/:user_name/history', async (req, res) => {//DONE
-  let serializedOptions = JSON.stringify(req.body.serialized_options)
+  let serialized_options = JSON.stringify(req.body.serialized_options)
   await knex('users_templates')
     .where({ 'history_id': req.body.history_id })
-    .update({ serialized_options: serializedOptions })
+    .update({ serialized_options })
 
   res.status(200).send('Document updated')
 })
