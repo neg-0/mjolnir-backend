@@ -247,9 +247,10 @@ app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
       let favoriteTemplateId = await data.map((element) => element.template_id)
       return favoriteTemplateId
     })
+
   if (favorites.includes(templateId) === false) {
-    await knex('favorites').insert({ user_id: userId, template_id: templateId })
-    res.status(201).send(`Favorite Successfully Added`)
+    let favorites = await knex('favorites').insert({ user_id: userId, template_id: templateId }).returning('template_id')
+    res.status(201).json(favorites)
   } else {
     res.status(304).send('Favorite not sent, duplicate.')
   }
@@ -258,13 +259,18 @@ app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
 
 //delete a favorite DELETE /users/:user_name/:template_id
 app.delete('/users/:user_name/:template_id', async (req, res) => { //DONE
+  let userId = await getUserIdByUserName(req.params.user_name)
   await knex('favorites')
     .select('template_id')
-    .where('user_id', await getUserIdByUserName(req.params.user_name))
+    .where('user_id', userId)
     .andWhere('template_id', req.params.template_id)
     .del()
 
-  res.send('Template removed from favorites');
+  let newFavorites = await knex('favorites')
+    .select('template_id')
+    .where('user_id', userId)
+
+  res.json(newFavorites)
 })
 
 //get a list of all templates (id, title, body, options)
