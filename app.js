@@ -187,7 +187,7 @@ app.post('/users/:user_name/history', async (req, res) => {
     .insert({ user_id, template_id, file_name, serialized_options })
     .returning('*')
     .then(history => {
-      res.status(201).json(history)
+      res.status(201).json(history[0])
     });
 })
 
@@ -198,11 +198,12 @@ app.patch('/history', async (req, res) => {//DONE
   let file_name = req.body.file_name
 
   console.log(history_id, serialized_options, file_name)
-  await knex('users_templates')
+  let newHistory = await knex('users_templates')
     .where('history_id', history_id)
     .update({ serialized_options, file_name })
+    .returning('*')
 
-  res.status(200).send('Document updated')
+  res.status(200).json(newHistory[0])
 })
 
 //delete a doc from history
