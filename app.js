@@ -130,10 +130,7 @@ app.get('/users/:user_name', (req, res) => {
     );
 })
 
-//get history of created documents
-app.get('/users/:user_name/history', async (req, res) => {
-  let user = req.params.user_name
-  let userId = await getUserIdByUserName(user);
+async function getHistoryByUserId(userId) {
   let historyArr = [];
   let serializedOptionsArray = await getSerializedOptionsByUserId(userId) //array of all serializedOptions from users_templates
 
@@ -142,11 +139,18 @@ app.get('/users/:user_name/history', async (req, res) => {
     let template_options = await getTemplateOptionsByTemplateId(history_object.template_id)
     historyArr.push({ history_object, template, template_options })
   }
-  // for (let i = 0; i < templateIdHist.length; i++) {
-  //   historyArr.push(await getHistoryRecord(userId, templateIdHist[i]))
-  // }
 
-  res.json(historyArr)
+  return historyArr
+}
+
+//get history of created documents
+app.get('/users/:user_name/history', async (req, res) => {
+  let user = req.params.user_name
+  let userId = await getUserIdByUserName(user);
+
+  let history = await getHistoryByUserId(userId)
+
+  res.json(history)
 })
 
 //get all history
@@ -207,14 +211,19 @@ app.patch('/history', async (req, res) => {//DONE
 })
 
 //delete a doc from history
-app.delete('/users/:user_name/history', async (req, res) => {//DONE
+app.delete('/users/:user_name/history/:history_id', async (req, res) => {//DONE
   let user = req.params.user_name
-  let idToDelete = req.body.history_id
+  let idToDelete = parseInt(req.params.history_id)
 
-  await knex('users_templates').where('history_id', idToDelete)
+  await knex('users_templates')
+    .where('history_id', idToDelete)
     .del()
 
-  res.status(200).send(`Successfully deleted`)
+  let user_id = await getUserIdByUserName(user)
+
+  let history = await getHistoryByUserId(user_id)
+
+  res.json(history)
 })
 
 //get users favorites GET /users/:user_name/favorites
@@ -240,7 +249,7 @@ app.get('/users/:user_name/favorites', async (req, res) => { //DONE
 })
 
 //add to favorites
-app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
+app.post('/users/:user_name/favorites/:template_id', async (req, res) => {//DONE
   let user = req.params.user_name;
   let userId = await getUserIdByUserName(user)
   let templateId = parseInt(req.params.template_id, 10)
@@ -268,7 +277,7 @@ app.post('/users/:user_name/:template_id', async (req, res) => {//DONE
 })
 
 //delete a favorite DELETE /users/:user_name/:template_id
-app.delete('/users/:user_name/:template_id', async (req, res) => { //DONE
+app.delete('/users/:user_name/favorites/:template_id', async (req, res) => { //DONE
   let userId = await getUserIdByUserName(req.params.user_name)
   await knex('favorites')
     .select('template_id')
