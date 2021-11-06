@@ -60,12 +60,24 @@ async function getSerializedOptionsByUserIdAndTemplateId(userId, templateId) {
   // .then(arr => arr.map((obj => { return { history_id: obj.history_id, serialized_options: JSON.parse(obj.serialized_options) } })))
 }
 
-//get serialized options by userID and templateId
+//get all serialized options
+async function getSerializedOptions() {
+  return await knex.select('*')
+    .from('users_templates')
+}
+
+//get serialized options by userID
 async function getSerializedOptionsByUserId(userId) {
   return await knex.select('*')
     .from('users_templates')
     .where('user_id', userId)
-  // .then(arr => arr.map((obj => { return { history_id: obj.history_id, serialized_options: JSON.parse(obj.serialized_options) } })))
+}
+
+//get serialized options by userID and templateId
+async function getSerializedOptionsByHistoryId(historyId) {
+  return await knex.select('*')
+    .from('users_templates')
+    .where('history_id', historyId)
 }
 
 //return an object that looks like {template: [], template_options: [], serialized_options: [{}]}
@@ -134,7 +146,33 @@ app.get('/users/:user_name/history', async (req, res) => {
   //   historyArr.push(await getHistoryRecord(userId, templateIdHist[i]))
   // }
 
-  res.send(historyArr)
+  res.json(historyArr)
+})
+
+//get all history
+app.get('/history', async (req, res) => {
+  let options = await getSerializedOptions() //array of all serializedOptions from users_templates
+  res.json(options)
+})
+
+//get history of single document by id
+app.get('/history/:history_id', async (req, res) => {
+  let history_id = req.params.history_id
+
+  let options = await getSerializedOptionsByHistoryId(history_id) //array of all serializedOptions from users_templates
+
+  if (options.length === 0) {
+    res.status(404).send('History ID not found')
+    return
+  }
+
+  let serialized_options = options[0]
+  let template = await getTemplateByTemplateId(serialized_options.template_id)
+  let template_options = await getTemplateOptionsByTemplateId(serialized_options.template_id)
+
+  let historyObject = { serialized_options, template, template_options }
+
+  res.json(historyObject)
 })
 
 //post history POST
