@@ -112,12 +112,17 @@ app.get('/users', async (req, res) => {
 
 //create new user
 app.post('/users', async (req, res) => {
-  let userFromBody = req.body.user_name
-  let passwordFromBody = req.body.password
-
-  await knex('users').insert({ user_name: userFromBody, password: passwordFromBody });
-
-  res.status(201).send('Posted user successfully')
+  let { user_name, password } = req.body
+  await knex('users').where({ user_name }).then(result => {
+    if (result.length > 0) {
+      res.status(409).send('Username already exists')
+    } else {
+      knex('users')
+        .insert({ user_name, password })
+        .returning(['id', 'user_name'])
+        .then(newUser => res.status(201).json(newUser[0]))
+    }
+  })
 })
 
 //login/load user
