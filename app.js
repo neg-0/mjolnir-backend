@@ -78,31 +78,31 @@ async function getSerializedOptionsByHistoryId(historyId) {
   return await knex.select('*')
     .from('users_templates')
     .where('history_id', historyId)
+}
+
+//returns {template: [], template_options: [], serialized_options: [{}]}
+async function getHistoryRecord(userId, templateId) {
+  let history = {}
+
+  history.template = await getTemplateByTemplateId(templateId)
+  history.template_options = await getTemplateOptionsByTemplateId(templateId)
+  history.history_object = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
+
+  return history
+}
+
+async function getHistoryByUserId(userId) {
+  let historyArr = [];
+  let serializedOptionsArray = await getSerializedOptionsByUserId(userId) //array of all userId's serializedOptions from users_templates
+
+  for (let history_object of serializedOptionsArray) {
+    let template = await getTemplateByTemplateId(history_object.template_id)
+    let template_options = await getTemplateOptionsByTemplateId(history_object.template_id)
+    historyArr.push({ history_object, template, template_options })
   }
 
-  //returns {template: [], template_options: [], serialized_options: [{}]}
-  async function getHistoryRecord(userId, templateId) {
-    let history = {}
-
-    history.template = await getTemplateByTemplateId(templateId)
-    history.template_options = await getTemplateOptionsByTemplateId(templateId)
-    history.history_object = await getSerializedOptionsByUserIdAndTemplateId(userId, templateId)
-
-    return history
-  }
-
-  async function getHistoryByUserId(userId) {
-    let historyArr = [];
-    let serializedOptionsArray = await getSerializedOptionsByUserId(userId) //array of all userId's serializedOptions from users_templates
-
-    for (let history_object of serializedOptionsArray) {
-      let template = await getTemplateByTemplateId(history_object.template_id)
-      let template_options = await getTemplateOptionsByTemplateId(history_object.template_id)
-      historyArr.push({ history_object, template, template_options })
-    }
-
-    return historyArr
-  }
+  return historyArr
+}
 
 //admin feature
 app.get('/users', async (req, res) => {
@@ -156,6 +156,23 @@ app.get('/users/:user_name/history', async (req, res) => {
   let history = await getHistoryByUserId(userId)
 
   res.json(history)
+})
+
+app.post('/login', (req, res) => {
+  let user_name = req.body.user_name
+  let password = req.body.password
+
+  knex.select('id', 'user_name')
+    .from('users')
+    .where({ user_name })
+    .andWhere({ password })
+    .then((result) => {
+      if (result.length < 1) {
+        res.status(401).send("Invalid login")
+      } else {
+        res.json(result[0])
+      }
+    })
 })
 
 //get all history
