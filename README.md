@@ -29,9 +29,6 @@ start server on port 3001 (/app.js) from backend directory
 start frontend on port 3000 (/app.js) in a new terminal from frontend directory
 - `npm start`
 
-![alt text](http://url/to/img.png)
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
-
 ---
 # API paths
 ### **(body requirements) eg. expects template_id in the body = (template_id)**
@@ -79,5 +76,7 @@ get a templates body and options by id
 ---
 # STRETCH GOALS
 
+- AWS - hit roadblock
 - implement ability to create new templates/options on front end and push them to backend
-- implement login credentials and security
+- ![alt text](http://url/to/img.png)
+- ![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
