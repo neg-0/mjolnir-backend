@@ -78,5 +78,11 @@ get a templates body and options by id
 
 - AWS - hit roadblock
 - implement ability to create new templates/options on front end and push them to backend
+- refactor to utilize arrays in db  (include options in templates table)
+- rename cols in template_options
+- if favorites copy to if new user
+- faovrites and newFavorites and favoriteTemplateId. the whole function needs replaced by a .returning function
+
+## to add images to .md
 - ![alt text](http://url/to/img.png)
 - ![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
